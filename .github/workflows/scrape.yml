@@ -1,0 +1,49 @@
+# .github/workflows/scrape.yml
+name: TMDB Complete Archive Scraper with AI Translation
+
+on:
+  workflow_dispatch:
+    inputs:
+      start_year:
+        description: 'سال شروع (مثلاً 2000)'
+        required: true
+        default: '2026'
+      end_year:
+        description: 'سال پایان (مثلاً 2026)'
+        required: true
+        default: '2026'
+      min_rating:
+        description: 'حداقل امتیاز (مثلاً 7.0)'
+        required: false
+        default: '7.0'
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    
+    steps:
+      - name: 📥 دریافت کدها
+        uses: actions/checkout@v4
+      
+      - name: 🐍 نصب پایتون
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: 📦 نصب کتابخانه‌ها
+        run: pip install requests
+      
+      - name: 🚀 اجرای اسکرپینگ با ترجمه هوش مصنوعی
+        env:
+          TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+        run: python tmdb_complete_scraper_with_ai_translation.py ${{ github.event.inputs.start_year }} ${{ github.event.inputs.end_year }} ${{ github.event.inputs.min_rating }}
+      
+      - name: 📤 آپلود خروجی
+        uses: actions/upload-artifact@v4
+        with:
+          name: movies-archive-translated
+          path: movies_archive_translated_*.json
+          retention-days: 90
